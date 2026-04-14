@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAEMI 플랫폼 기술로드맵 — Technology Roadmap</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;transition:background .3s,color .3s}
+body.dark{background:#0F172A;color:#E2E8F0}
+body.light{background:#F8FAFC;color:#1E293B}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+body.dark ::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+body.light ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:3px}
+button{font-family:inherit}
+</style>
+</head>
+<body class="dark">
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useCallback,createContext,useContext}=React;
+const ThemeCtx=createContext("dark");
+const TH={
+  dark:{bg:"#0F172A",surface:"#1E293B",border:"#334155",text:"#E2E8F0",t2:"#94A3B8",t3:"#64748B",t4:"#475569",
+    rowBg:"#1E293B88",cellBg:"#0F172A",hoverBg:"#ffffff0A"},
+  light:{bg:"#F8FAFC",surface:"#FFFFFF",border:"#E2E8F0",text:"#1E293B",t2:"#475569",t3:"#64748B",t4:"#94A3B8",
+    rowBg:"#F1F5F9",cellBg:"#FFFFFF",hoverBg:"#00000006"},
+};
+
+const PERIOD_COLORS=["#2563EB","#7C3AED","#059669"];
+const PERIOD_LABELS=["단기 (~2027)","중기 (~2030)","장기 (~2035)"];
+const PERIOD_SUB=["규제 해소 · 제한 구역 상용화","도심 확장 · Fleet 규모화","고밀도 물류망 · 다목적 플랫폼"];
+
+const BF_COLORS={"1":"#2563EB","2":"#7C3AED","3":"#059669","4":"#DC2626","5":"#D97706","6":"#475569"};
+const BF_NAMES={"1":"환경 인식","2":"경로 계획","3":"자율 이동","4":"물리적 상호작용","5":"운영 관제","6":"안전 확보"};
+
+const STATUS_STYLE={
+  "확정":{bg:"#05966922",color:"#059669",border:"#05966944"},
+  "현재 수준":{bg:"#2563EB22",color:"#60A5FA",border:"#2563EB44"},
+  "정책 방향":{bg:"#D9770622",color:"#F59E0B",border:"#D9770644"},
+  "전망":{bg:"#7C3AED22",color:"#A78BFA",border:"#7C3AED44"},
+};
+
+// Layer 1: Market Trends
+const MARKET=[
+  {period:0,items:[
+    {year:"2023.05",text:"지능형로봇법 개정 — 실외이동로봇 정의 신설, 보도 통행 허용",status:"확정",src:"법률 제19412호"},
+    {year:"2023.11",text:"운행안전인증 제도 개시",status:"확정",src:"고시 제2023-211호"},
+    {year:"2024.01",text:"GAEMI-1 운행안전인증 국내 1호 획득",status:"확정",src:"한국로봇산업진흥원"},
+    {year:"2024.01",text:"AI 학습용 영상정보 원본 활용 허용, 실증 범위 전국 확대",status:"확정",src:"과기정통부 규제샌드박스"},
+    {year:"2025",text:"로보티즈에이아이 물적분할 설립",status:"확정",src:"금감원 공시"},
+    {year:"2025.11",text:"운행안전인증 심사 16→8개 통폐합 추진",status:"정책 방향",src:"AI 규제합리화 로드맵"},
+    {year:"2026",text:"GAEMI 300대+ 공급, 땡겨요 협업, 아파트 단지 서비스 준비",status:"전망",src:"ROSCon KR 2026"},
+    {year:"~2027",text:"로봇 안전기준 재정비 로드맵 수립",status:"정책 방향",src:"AI 규제합리화 로드맵"},
+  ],summary:"운행안전인증 기반 제한 구역 상용화. 사고 없는 안전 운행 실적 축적이 핵심."},
+  {period:1,items:[
+    {year:"~2028",text:"운행안전인증 기준 타당성 재검토 (2년 주기)",status:"확정",src:"고시 제16조"},
+    {year:"~2028",text:"간소화된 인증 기준(8개 항목) 시행 전망",status:"전망",src:"AI 규제합리화 로드맵 기반"},
+    {year:"~2030",text:"글로벌 자율배송로봇 시장 ~32.7억 달러",status:"전망",src:"Mordor Intelligence"},
+    {year:"~2030",text:"도심 마이크로 풀필먼트(MFC) 확산",status:"전망",src:"업계 공통 전망"},
+  ],summary:"인증 간소화 · 도심 보도 상업 배송 확대. Fleet 관제·임무 배분이 핵심."},
+  {period:2,items:[
+    {year:"~2035",text:"글로벌 지능형 로봇 시장 200~250억 달러 (연평균 20~30%)",status:"전망",src:"AI 규제합리화 로드맵"},
+    {year:"~2035",text:"완전 자율주행 레벨5 기술 목표 시점",status:"정책 방향",src:"정부 자율주행 로드맵"},
+  ],summary:"고밀도 로봇 물류망, 다목적 서비스 플랫폼. 도시 인프라 통합."},
+];
+
+// Layer 2: Products/Services
+const PRODUCTS=[
+  {period:0,items:[
+    {name:"GAEMI-1 실외 배송",desc:"아파트 단지·캠퍼스·리조트 내 음식·소형 물품 배송",src:"robotis.com"},
+    {name:"GAEMI-0 실내 배송",desc:"호텔·병원·오피스 층간 배송 (로봇팔 EV 조작)",src:"robotis.us"},
+    {name:"순찰 서비스",desc:"공원·아파트 단지 실외 자율 순찰·안전 모니터링",src:"robotis.com"},
+    {name:"수거 서비스",desc:"환경공무원 협업 실외 쓰레기 수거",src:"robotis.com"},
+    {name:"로보이츠 배달 플랫폼",desc:"서울 마곡 일대 자체 앱 기반 음식 배달",src:"robotis.com"},
+  ]},
+  {period:1,items:[
+    {name:"도심 보도 배송",desc:"도심 상업지역 보도 라스트마일 배송 확대",src:"ROSCon KR 2026",status:"전망"},
+    {name:"아파트 단지 통합 서비스",desc:"건설사 협업 배달 + 수거 통합",src:"로봇신문 2026.01",status:"전망"},
+    {name:"Fleet 관제 플랫폼",desc:"다수 로봇 통합 관제·임무 배분·원격 제어",status:"전망"},
+  ]},
+  {period:2,items:[
+    {name:"다목적 서비스 플랫폼",desc:"배송·순찰·수거·안내 — 상부 적재함 교체 기반",status:"전망"},
+    {name:"로봇 친화 빌딩 통합 솔루션",desc:"신축 건물 설계부터 로봇 운영 고려",status:"전망"},
+  ]},
+];
+
+// Layer 3: Core Technologies (기본기능별)
+const TECH=[
+  {bf:"1",label:"환경 인식 및 판단",items:[
+    {id:"1.1.1",name:"원거리 환경 감지",s:"2D LiDAR 기반 감지 안정화",m:"센서 해상도·범위 향상, 악천후 신뢰성",l:"다중 센서 융합 고도화"},
+    {id:"1.1.2",name:"시각 기반 환경 감지",s:"카메라 실시간 인식 (실내~10개)",m:"야간·악천후 인식 향상",l:"전천후 환경 인식"},
+    {id:"1.1.3",name:"근거리 장애물 감지",s:"초음파·범퍼 센서 감지",m:"정밀도·반응 속도 향상",l:null},
+    {id:"1.2.1",name:"딥러닝 객체 분류",s:"딥러닝 AI 보행자·차량 분류",m:"취약 보행자 세분화 분류",l:"보행자 의도 예측 고도화"},
+    {id:"1.2.2",name:"3D 카메라 객체 인식",s:"EV 버튼·카드리더 인식",m:"비정형 조작 대상 확장",l:null},
+    {id:"1.3.1",name:"자기 위치 추정",s:"센서 데이터 실시간 위치 추정",m:"도심 복잡 환경 정밀도 향상",l:"GPS-denied 환경 대응"},
+    {id:"1.3.2",name:"주행 환경 학습·지도 갱신",s:"반복 주행 경로 학습·개선",m:"동적 환경 변화 실시간 반영",l:"도시 규모 동적 맵 관리"},
+    {id:"1.4.1",name:"보행 신호 인식",s:"횡단보도 신호 인식·판단",m:"복잡 교차로 신호 대응",l:null},
+  ]},
+  {bf:"2",label:"경로 계획 및 항법",items:[
+    {id:"2.1.1",name:"최적 경로 생성",s:"지도 기반 최적 경로 탐색",m:"실시간 교통·밀도 반영 동적 경로",l:"다중 로봇 경로 동시 최적화"},
+    {id:"2.1.2",name:"운행구역 준수 경로 생성",s:"금지구역 배제 경로",m:"운행구역 확대 대응",l:null},
+    {id:"2.2.1",name:"장애물 회피 경로 재생성",s:"감속·정지·회피",m:"보행자 궤적 예측 선제 회피",l:null},
+    {id:"2.2.2",name:"보행자 밀집 대응",s:"관제 알림·관리자 조치 요청",m:"밀집도 자율 판단·우회 자동",l:null},
+    {id:"2.2.3",name:"주행 데이터 경로 학습",s:"축적 데이터 경로 개선",m:"Fleet 데이터 학습 고도화",l:"RFM 적용"},
+    {id:"2.3.1",name:"횡단 시점 결정·실행",s:"고시 항목13 충족",m:"복잡 교차로 횡단 대응",l:null},
+  ]},
+  {bf:"3",label:"자율 이동",items:[
+    {id:"3.1.1",name:"전방향 이동",s:"스워브 드라이브 4륜 독립 구동",m:"구동 효율·소음 저감",l:null},
+    {id:"3.1.2",name:"속도 제어",s:"±10% 정확도, 보호구역 5km/h",m:"보행자 밀도 적응형 속도",l:null},
+    {id:"3.2.1",name:"경사로 안정 주행",s:"5° 이상 경사로 안정 주행",m:"급경사·복잡 지형 대응",l:null},
+    {id:"3.2.2",name:"단차 통과",s:"30mm 이상 구조물 통과",m:"다양한 도심 지형 대응",l:null},
+    {id:"3.3.1",name:"배터리 상태 관리",s:"최대 6시간 운행, 실시간 관리",m:"운행시간 연장",l:"전고체 배터리 적용"},
+    {id:"3.3.2",name:"자율 충전 복귀",s:"도킹 스테이션 자율 복귀",m:"무선 충전 기술 도입",l:null},
+    {id:"3.4.1",name:"EV 탑승·층간 이동",s:"물리/무선 EV 연동",m:"로봇-승강기 KS 표준 연동",l:null},
+  ]},
+  {bf:"4",label:"물리적 환경 상호작용",items:[
+    {id:"4.1.1",name:"버튼 조작",s:"3D 카메라+프로브 EV 버튼 조작",m:"다양한 버튼·스위치 대응",l:null},
+    {id:"4.1.2",name:"문 노크",s:"로봇팔 물리적 노크",m:null,l:null},
+    {id:"4.2.1",name:"보안카드 태깅",s:"RFID 스캐너 기반 태깅",m:"QR·NFC 등 다양한 인증 대응",l:null},
+    {id:"4.3.1",name:"무선 통신 대체 제어",s:"무선 EV 제어 대안 수단",m:"로봇 친화 빌딩 표준 프로토콜",l:null},
+    {id:"4.3.2",name:"인프라 비의존 자율 운영",s:"기존 인프라 무변경 배포",m:"신축 건물 로봇 친화 설계 연동",l:null},
+  ]},
+  {bf:"5",label:"운영 관제 및 통신",items:[
+    {id:"5.1.1",name:"로봇 식별·상태 확인",s:"위치·속력·배터리·상태 실시간 확인",m:"수백 대 Fleet 동시 모니터링",l:"도시 규모 관제"},
+    {id:"5.1.2",name:"이상 상황 감지·알림",s:"통행불가 시 관제 알림",m:"예측 기반 사전 감지",l:null},
+    {id:"5.2.1",name:"원격 정지",s:"원격 정지 수단",m:null,l:null},
+    {id:"5.2.2",name:"원격 수동 조작",s:"카메라 영상 기반 원격 수동",m:"원격 조작 빈도 감소",l:"1인 다수 로봇 관제"},
+    {id:"5.3.1",name:"실시간 통신",s:"로봇-관제 실시간 통신",m:"5G 기반 저지연 통신",l:null},
+    {id:"5.3.2",name:"통신 장애 대응",s:"사전 시나리오 기반 대응",m:"엣지 컴퓨팅 자율 판단",l:null},
+    {id:"5.4.1",name:"앱 기반 배송 요청·알림",s:"GAEMI 앱 주문·알림",m:"외부 플랫폼 API 연동 확대",l:null},
+    {id:"5.4.2",name:"다국어 음성·터치스크린",s:"4개국어 음성+터치스크린",m:"음성 인식 양방향 대화",l:null},
+  ]},
+  {bf:"6",label:"안전 확보",items:[
+    {id:"6.1.1",name:"물리적 비상정지",s:"빨간 버섯머리 버튼, 최우선권",m:null,l:null},
+    {id:"6.1.2",name:"경사로 비상정지 안전",s:"미끄러짐·구름 방지 제동",m:null,l:null},
+    {id:"6.2.1",name:"접촉 안전 설계",s:"곡면 마감, 반경 3mm+, 끼임 방지",m:null,l:null},
+    {id:"6.3.1",name:"청각 알림",s:"55~73dB(A) 알림음",m:"상황 적응형 알림음",l:null},
+    {id:"6.3.2",name:"시각 알림",s:"등화장치, 60°C 미만",m:"의도 표현 고도화",l:null},
+    {id:"6.4.1",name:"방수 보호",s:"IPX4 이상",m:"더 높은 방수 등급",l:null},
+    {id:"6.5.1",name:"통신포트·저장장치 보안",s:"외부 접근 차단·잠금",m:null,l:null},
+    {id:"6.5.2",name:"적재함 보안 잠금",s:"보안 수납함 잠금",m:"생체 인증·OTP 수령 확인",l:null},
+  ]},
+];
+
+function StatusBadge({status}){
+  const s=STATUS_STYLE[status]||STATUS_STYLE["전망"];
+  return <span style={{fontSize:9,padding:"1px 6px",borderRadius:4,background:s.bg,color:s.color,border:`1px solid ${s.border}`,fontWeight:600}}>{status}</span>;
+}
+
+function MarketLayer({data}){
+  const theme=useContext(ThemeCtx);const T=TH[theme];
+  const[openPeriod,setOpen]=useState(0);
+  return(
+    <div>
+      <div style={{display:"flex",gap:6,marginBottom:10}}>
+        {PERIOD_LABELS.map((p,i)=>(
+          <button key={i} onClick={()=>setOpen(i)} style={{flex:1,padding:"8px 6px",borderRadius:8,cursor:"pointer",
+            border:openPeriod===i?`2px solid ${PERIOD_COLORS[i]}`:`1px solid ${T.border}`,
+            background:openPeriod===i?PERIOD_COLORS[i]+"18":"transparent",
+            color:openPeriod===i?PERIOD_COLORS[i]:T.t2,fontWeight:openPeriod===i?700:400,fontSize:12,textAlign:"center",
+          }}>
+            <div>{p}</div>
+            <div style={{fontSize:10,fontWeight:400,marginTop:2,opacity:.7}}>{PERIOD_SUB[i]}</div>
+          </button>
+        ))}
+      </div>
+      {data.filter(d=>d.period===openPeriod).map((d,di)=>(
+        <div key={di}>
+          <div style={{display:"flex",flexDirection:"column",gap:4}}>
+            {d.items.map((it,ii)=>(
+              <div key={ii} style={{display:"flex",alignItems:"flex-start",gap:8,padding:"6px 10px",borderRadius:6,background:T.rowBg,border:`1px solid ${T.border}`}}>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:PERIOD_COLORS[openPeriod],fontWeight:700,minWidth:52,marginTop:1}}>{it.year}</span>
+                <span style={{fontSize:12,color:T.text,flex:1,lineHeight:1.5}}>{it.text}</span>
+                <StatusBadge status={it.status}/>
+              </div>
+            ))}
+          </div>
+          <div style={{marginTop:8,padding:"8px 12px",borderRadius:6,background:PERIOD_COLORS[openPeriod]+"0A",borderLeft:`3px solid ${PERIOD_COLORS[openPeriod]}66`,fontSize:11,color:T.t2,lineHeight:1.6}}>
+            {d.summary}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ProductLayer({data}){
+  const theme=useContext(ThemeCtx);const T=TH[theme];
+  return(
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+      {[0,1,2].map(p=>(
+        <div key={p} style={{borderRadius:8,border:`1px solid ${PERIOD_COLORS[p]}33`,overflow:"hidden"}}>
+          <div style={{padding:"8px 10px",background:PERIOD_COLORS[p]+"18",borderBottom:`1px solid ${PERIOD_COLORS[p]}33`}}>
+            <div style={{fontSize:12,fontWeight:700,color:PERIOD_COLORS[p]}}>{PERIOD_LABELS[p]}</div>
+          </div>
+          <div style={{padding:8,display:"flex",flexDirection:"column",gap:4}}>
+            {data.filter(d=>d.period===p).flatMap(d=>d.items).map((it,i)=>(
+              <div key={i} style={{padding:"6px 8px",borderRadius:6,background:T.rowBg,border:`1px solid ${T.border}`}}>
+                <div style={{fontSize:12,fontWeight:600,color:T.text}}>{it.name}</div>
+                <div style={{fontSize:10,color:T.t3,marginTop:2,lineHeight:1.5}}>{it.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TechLayer({data,bfFilter}){
+  const theme=useContext(ThemeCtx);const T=TH[theme];
+  const filtered=bfFilter==="전체"?data:data.filter(d=>d.bf===bfFilter);
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      {filtered.map(group=>(
+        <div key={group.bf}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+            <div style={{width:4,height:16,borderRadius:2,background:BF_COLORS[group.bf]}}/>
+            <span style={{fontSize:13,fontWeight:700,color:BF_COLORS[group.bf]}}>기본기능 {group.bf}</span>
+            <span style={{fontSize:12,color:T.t2}}>{group.label}</span>
+          </div>
+          <div style={{overflowX:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"separate",borderSpacing:0,fontSize:11}}>
+              <thead>
+                <tr>
+                  <th style={{textAlign:"left",padding:"6px 8px",borderBottom:`2px solid ${T.border}`,color:T.t3,fontWeight:600,width:"18%",whiteSpace:"nowrap"}}>핵심기술</th>
+                  {[0,1,2].map(p=>(
+                    <th key={p} style={{textAlign:"left",padding:"6px 8px",borderBottom:`2px solid ${PERIOD_COLORS[p]}44`,color:PERIOD_COLORS[p],fontWeight:600,width:"27%"}}>{PERIOD_LABELS[p]}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {group.items.map((it,i)=>(
+                  <tr key={it.id} style={{background:i%2===0?"transparent":T.hoverBg}}>
+                    <td style={{padding:"5px 8px",borderBottom:`1px solid ${T.border}`,verticalAlign:"top"}}>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:BF_COLORS[group.bf],fontWeight:600}}>{it.id}</span>
+                      <span style={{marginLeft:4,color:T.text,fontWeight:500}}>{it.name}</span>
+                    </td>
+                    {[it.s,it.m,it.l].map((cell,ci)=>(
+                      <td key={ci} style={{padding:"5px 8px",borderBottom:`1px solid ${T.border}`,color:cell?T.t2:T.t4,verticalAlign:"top",lineHeight:1.5}}>
+                        {cell||"—"}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function App(){
+  const[theme,setTheme]=useState("dark");
+  const[activeLayer,setActiveLayer]=useState(0);
+  const[bfFilter,setBfFilter]=useState("전체");
+  const T=TH[theme];
+
+  const toggleTheme=useCallback(()=>{
+    const n=theme==="dark"?"light":"dark";setTheme(n);document.body.className=n;
+  },[theme]);
+
+  const layers=[
+    {label:"1층: Market Trends",sub:"시장 환경 및 니즈",icon:"📊"},
+    {label:"2층: Products / Services",sub:"제품 및 서비스",icon:"📦"},
+    {label:"3층: Core Technologies",sub:"핵심기술 (기술트리 연계)",icon:"⚙️"},
+  ];
+
+  const btnStyle=(active,c)=>({
+    fontSize:11,padding:"4px 12px",borderRadius:6,cursor:"pointer",
+    border:active?`1px solid ${c||"#60A5FA"}`:`1px solid ${T.border}`,
+    background:active?`${c||"#60A5FA"}22`:"transparent",
+    color:active?(c||"#60A5FA"):T.t2,fontWeight:active?600:400,
+  });
+
+  return(
+    <ThemeCtx.Provider value={theme}>
+      <div style={{minHeight:"100vh",background:T.bg,color:T.text,transition:"all .3s"}}>
+        <div style={{maxWidth:960,margin:"0 auto",padding:"24px 16px"}}>
+          {/* Header */}
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+            <div>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+                <div style={{width:4,height:28,background:"linear-gradient(180deg,#2563EB,#059669)",borderRadius:2}}/>
+                <h1 style={{fontSize:20,fontWeight:800,margin:0,letterSpacing:"-0.02em"}}>GAEMI 플랫폼 기술로드맵</h1>
+              </div>
+              <div style={{fontSize:12,color:T.t3,marginLeft:14,lineHeight:1.6}}>
+                3층 구조 (Market Trends → Products/Services → Core Technologies) × 3시간축 (단기/중기/장기)
+              </div>
+              <div style={{fontSize:10,color:T.t4,marginLeft:14,marginTop:4}}>
+                한양대학교 ERICA 기술경영 | Lecture 3 기술기획 기반 | 기술트리 39개 3차 노드 전체 배치
+              </div>
+            </div>
+            <button onClick={toggleTheme} style={{
+              fontSize:12,padding:"6px 14px",borderRadius:8,cursor:"pointer",
+              border:`1px solid ${T.border}`,background:T.surface,color:T.t2,fontWeight:600,whiteSpace:"nowrap",
+            }}>{theme==="dark"?"☀️ Light":"🌙 Dark"}</button>
+          </div>
+
+          {/* Status legend */}
+          <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:16}}>
+            <span style={{fontSize:10,color:T.t3,fontWeight:700}}>구분:</span>
+            {Object.entries(STATUS_STYLE).map(([k,v])=>(
+              <div key={k} style={{display:"flex",alignItems:"center",gap:4}}>
+                <span style={{width:8,height:8,borderRadius:2,background:v.color}}/>
+                <span style={{fontSize:10,color:T.t2}}>{k}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Layer tabs */}
+          <div style={{display:"flex",gap:6,marginBottom:16}}>
+            {layers.map((ly,i)=>(
+              <button key={i} onClick={()=>setActiveLayer(i)} style={{
+                flex:1,padding:"10px 8px",borderRadius:8,cursor:"pointer",textAlign:"center",
+                border:activeLayer===i?`2px solid ${["#2563EB","#D97706","#059669"][i]}`:`1px solid ${T.border}`,
+                background:activeLayer===i?`${["#2563EB","#D97706","#059669"][i]}12`:"transparent",
+                color:activeLayer===i?["#2563EB","#D97706","#059669"][i]:T.t2,
+              }}>
+                <div style={{fontSize:14,marginBottom:2}}>{ly.icon}</div>
+                <div style={{fontSize:12,fontWeight:activeLayer===i?700:500}}>{ly.label}</div>
+                <div style={{fontSize:10,fontWeight:400,marginTop:2,opacity:.7}}>{ly.sub}</div>
+              </button>
+            ))}
+          </div>
+
+          {/* BF filter for layer 3 */}
+          {activeLayer===2&&(
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12,flexWrap:"wrap"}}>
+              <span style={{fontSize:11,color:T.t3,fontWeight:600}}>기본기능 필터:</span>
+              <button onClick={()=>setBfFilter("전체")} style={btnStyle(bfFilter==="전체")}>전체</button>
+              {Object.entries(BF_NAMES).map(([k,v])=>(
+                <button key={k} onClick={()=>setBfFilter(k)} style={btnStyle(bfFilter===k,BF_COLORS[k])}>
+                  {k}. {v}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Content */}
+          <div style={{background:T.surface,borderRadius:12,padding:16,border:`1px solid ${T.border}`,minHeight:300}}>
+            {activeLayer===0&&<MarketLayer data={MARKET}/>}
+            {activeLayer===1&&<ProductLayer data={PRODUCTS}/>}
+            {activeLayer===2&&<TechLayer data={TECH} bfFilter={bfFilter}/>}
+          </div>
+
+          {/* Footer */}
+          <div style={{marginTop:16,padding:"12px 14px",background:theme==="dark"?"#1E293B44":"#F1F5F9",borderRadius:8,border:`1px solid ${T.border}`}}>
+            <div style={{fontSize:11,color:T.t3,lineHeight:1.6}}>
+              <strong style={{color:T.t2}}>설계 원칙</strong> — Lecture 3: "미래 니즈에서 출발하여 필요한 핵심기술을 역으로 도출하는 전략 도구". Technologies 층의 모든 항목은 기술트리 확정본(69노드)의 3차 핵심기술에서 도출.
+            </div>
+            <div style={{fontSize:10,color:T.t4,marginTop:6}}>
+              출처: 산업통상자원부 고시 제2023-211호, AI 규제합리화 로드맵(2025.11.27), ROSCon KR 2026(로봇신문), ROBOTIS 공식, Mordor Intelligence, 금감원 공시
+            </div>
+          </div>
+        </div>
+      </div>
+    </ThemeCtx.Provider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
