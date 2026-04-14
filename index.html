@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAEMI 플랫폼 기술트리 — Technology Tree</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;transition:background .3s,color .3s}
+body.dark{background:#0F172A;color:#E2E8F0}
+body.light{background:#F8FAFC;color:#1E293B}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+body.dark ::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+body.light ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:3px}
+button{font-family:inherit}
+</style>
+</head>
+<body class="dark">
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useCallback, useMemo, createContext, useContext } = React;
+
+// Theme context
+const ThemeCtx = createContext('dark');
+
+// Color schemes
+const THEMES = {
+  dark: {
+    bg: '#0F172A', surface: '#1E293B', surfaceHover: '#ffffff18', border: '#1E293B',
+    text: '#E2E8F0', textSec: '#94A3B8', textTer: '#64748B', textQuat: '#475569',
+    cardBg: 'rgba(255,255,255,0.06)', cardBg2: 'rgba(255,255,255,0.04)',
+    cardBg3: 'rgba(255,255,255,0.02)', detailBg: (c) => c + '0A',
+  },
+  light: {
+    bg: '#F8FAFC', surface: '#FFFFFF', surfaceHover: '#00000008', border: '#E2E8F0',
+    text: '#1E293B', textSec: '#475569', textTer: '#64748B', textQuat: '#94A3B8',
+    cardBg: 'rgba(0,0,0,0.03)', cardBg2: 'rgba(0,0,0,0.02)',
+    cardBg3: 'rgba(0,0,0,0.01)', detailBg: (c) => c + '0D',
+  },
+};
+
+const TREE_DATA = {
+  id:"root",label:"GAEMI 플랫폼",sublabel:"실내외 환경에서 자율주행 기반 물품 배송을 수행하는 로봇 플랫폼",level:"목적기능",scope:"공통",
+  children:[
+    {id:"1",label:"환경 인식 및 판단",sublabel:"주변 환경을 감지하고, 장애물·보행자·신호 등을 인식하여 상황을 판단",level:"기본기능 1",color:"#2563EB",
+      children:[
+        {id:"1.1",label:"주변 환경 감지",level:"2차",children:[
+          {id:"1.1.1",label:"원거리 환경 감지",level:"3차",scope:"실외",desc:"2D LiDAR를 활용한 주행 경로 상 물체 거리 측정 및 형상 감지",src:"ROBOTIS 공식 사양"},
+          {id:"1.1.2",label:"시각 기반 환경 감지",level:"3차",scope:"공통",desc:"RGB 카메라를 통한 주변 환경 시각 정보 수집 (실내 ~10개 카메라, 실외 비전 카메라)",src:"HITEC 2024 기자 취재"},
+          {id:"1.1.3",label:"근거리 장애물 감지",level:"3차",scope:"공통",desc:"초음파 센서 및 범퍼 센서를 통한 근거리 장애물 감지 및 돌발 접촉 감지",src:"HITEC 2024 / ROBOTIS 공식"},
+        ]},
+        {id:"1.2",label:"객체 인식 및 분류",level:"2차",children:[
+          {id:"1.2.1",label:"딥러닝 기반 객체 분류",level:"3차",scope:"공통",desc:"딥러닝 AI를 활용하여 주변환경과 장애물을 자동 분류 및 판단",src:"robotis.com"},
+          {id:"1.2.2",label:"로봇팔 3D 카메라 객체 인식",level:"3차",scope:"실내",desc:"매니퓰레이터 부착 3D 카메라로 EV 버튼, 카드리더 등 인식",src:"robotis.us"},
+        ]},
+        {id:"1.3",label:"위치 추정 및 지도 관리",level:"2차",children:[
+          {id:"1.3.1",label:"자기 위치 추정",level:"3차",scope:"공통",desc:"센서 데이터를 종합하여 현재 위치를 실시간 추정",src:"robotis.us / 고시 항목14"},
+          {id:"1.3.2",label:"주행 환경 학습·지도 갱신",level:"3차",scope:"공통",desc:"주행 데이터 축적으로 경로 학습 및 개선",src:"en.robotis.com"},
+        ]},
+        {id:"1.4",label:"교통 신호 인식",level:"2차",children:[
+          {id:"1.4.1",label:"보행 신호 인식",level:"3차",scope:"실외",desc:"신호등의 보행 신호 상태를 인지하여 횡단 시점 결정",src:"고시 별표3 항목13"},
+        ]},
+      ]
+    },
+    {id:"2",label:"경로 계획 및 항법",sublabel:"최적 경로를 탐색하고, 실시간으로 경로를 수정하며, 목적지까지 안내",level:"기본기능 2",color:"#7C3AED",
+      children:[
+        {id:"2.1",label:"전역 경로 탐색",level:"2차",children:[
+          {id:"2.1.1",label:"최적 경로 생성",level:"3차",scope:"공통",desc:"지도 데이터 기반 목적지까지 최적 경로 도출",src:"robotis.us",ie:"OR"},
+          {id:"2.1.2",label:"운행구역 준수 경로 생성",level:"3차",scope:"실외",desc:"지정 운행구역 내 경로 생성, 금지구역 진입 배제",src:"고시 별표3 항목6",ie:"OR"},
+        ]},
+        {id:"2.2",label:"실시간 경로 수정",level:"2차",children:[
+          {id:"2.2.1",label:"장애물 회피 경로 재생성",level:"3차",scope:"공통",desc:"주행 중 감지된 장애물을 안전하게 감속·정지·회피하는 경로 실시간 생성",src:"고시 항목8 / robotis.com",ie:"OR"},
+          {id:"2.2.2",label:"보행자 밀집 구간 대응",level:"3차",scope:"실외",desc:"보행자 밀집으로 통행 불가 시 관제장치에 알리고 관리자 조치 요청",src:"고시 항목14다"},
+          {id:"2.2.3",label:"주행 데이터 기반 경로 학습",level:"3차",scope:"공통",desc:"반복 주행 데이터 활용하여 경로 선택 개선",src:"en.robotis.com"},
+        ]},
+        {id:"2.3",label:"횡단보도 통행 판단",level:"2차",children:[
+          {id:"2.3.1",label:"횡단 시점 결정 및 실행",level:"3차",scope:"실외",desc:"보행 신호 상태에 따라 대기·출발·횡단 완료 판단 및 실행",src:"고시 별표3 항목13"},
+        ]},
+      ]
+    },
+    {id:"3",label:"자율 이동",sublabel:"지정된 출발지에서 목적지까지 스스로 이동",level:"기본기능 3",color:"#059669",
+      children:[
+        {id:"3.1",label:"구동",level:"2차",children:[
+          {id:"3.1.1",label:"전방향 이동",level:"3차",scope:"공통",desc:"4륜 독립 조향·구동(스워브 드라이브), DYNAMIXEL 액추에이터, 제자리 회전",src:"HITEC 2024",ie:"MFG",spec:"800×850×920mm, ~70kg"},
+          {id:"3.1.2",label:"속도 제어",level:"3차",scope:"공통",desc:"설정 속도 대비 ±10% 정확도, 보호구역 5km/h 제한",src:"고시 항목2,7",spec:"최대 15km/h (100kg이하)"},
+        ]},
+        {id:"3.2",label:"주행 안정화",level:"2차",children:[
+          {id:"3.2.1",label:"경사로 안정 주행",level:"3차",scope:"공통",desc:"5° 이상 경사로에서 적재물 이탈·낙하 없이 안정 주행",src:"고시 항목4가",ie:"MFG"},
+          {id:"3.2.2",label:"단차 통과",level:"3차",scope:"공통",desc:"30mm 이상 구조물을 전도 없이 안전 통과",src:"고시 항목4나"},
+        ]},
+        {id:"3.3",label:"에너지 관리 및 연속 운행",level:"2차",children:[
+          {id:"3.3.1",label:"배터리 상태 관리",level:"3차",scope:"공통",desc:"배터리 잔량·주행가능거리 실시간 관리 및 관제장치 전달",src:"고시 항목14나",spec:"최대 운행 360분"},
+          {id:"3.3.2",label:"자율 충전 복귀",level:"3차",scope:"공통",desc:"배송 완료 또는 배터리 부족 시 충전 스테이션 자율 복귀 도킹",src:"robotis.us / ceoscoredaily"},
+        ]},
+        {id:"3.4",label:"수직 이동 연동",level:"2차",children:[
+          {id:"3.4.1",label:"엘리베이터 탑승·층간 이동",level:"3차",scope:"실내",desc:"물리 조작 또는 무선 통신으로 EV 호출·탑승·이동·하차 자율 수행",src:"robotis.us / ifdesign.com"},
+        ]},
+      ]
+    },
+    {id:"4",label:"물리적 환경 상호작용",sublabel:"EV 버튼 조작, 보안카드 태깅, 문 노크 등 기존 인프라와 물리적 상호작용 [실내 고유]",level:"기본기능 4",color:"#DC2626",
+      children:[
+        {id:"4.1",label:"매니퓰레이션",level:"2차",children:[
+          {id:"4.1.1",label:"버튼 조작",level:"3차",scope:"실내",desc:"3D 카메라로 EV 버튼 위치 인식 후 프로브로 물리 조작",src:"robotis.us / HITEC 2024",ie:"MFG"},
+          {id:"4.1.2",label:"문 노크",level:"3차",scope:"실내",desc:"객실 문을 물리적으로 노크하여 수령자에게 도착 알림",src:"robotis.us",ie:"HF"},
+        ]},
+        {id:"4.2",label:"비접촉 인증 수행",level:"2차",children:[
+          {id:"4.2.1",label:"보안카드 태깅",level:"3차",scope:"실내",desc:"로봇팔 RFID 스캐너로 보안카드 리더에 태깅, 출입 제한 구역 통과",src:"robotis.us / aparobot.com"},
+        ]},
+        {id:"4.3",label:"기존 인프라 무변경 배포",level:"2차",children:[
+          {id:"4.3.1",label:"무선 통신 대체 제어",level:"3차",scope:"실내",desc:"물리 조작 불가 시 무선 통신으로 EV 제어하는 대안 수단",src:"robotis.us"},
+          {id:"4.3.2",label:"인프라 비의존 자율 운영",level:"3차",scope:"실내",desc:"기존 건물 인프라 변경 없이 자율 운영 가능한 배포 방식",src:"en.robotis.com / ifdesign.com"},
+        ]},
+      ]
+    },
+    {id:"5",label:"운영 관제 및 통신",sublabel:"다수 로봇의 상태 모니터링, 임무 할당, 원격 제어, 사용자 인터페이스 제공",level:"기본기능 5",color:"#D97706",
+      children:[
+        {id:"5.1",label:"로봇 상태 모니터링",level:"2차",children:[
+          {id:"5.1.1",label:"로봇 식별 및 상태 확인",level:"3차",scope:"공통",desc:"위치·속력·배터리·통신·상태(주행/대기/비상/오류) 실시간 확인",src:"고시 항목14가,14나",ie:"OR"},
+          {id:"5.1.2",label:"이상 상황 감지·알림",level:"3차",scope:"공통",desc:"오류·통행불가·통신장애 시 관리자 즉시 알림",src:"고시 항목14다 / Google Play"},
+        ]},
+        {id:"5.2",label:"원격 제어",level:"2차",children:[
+          {id:"5.2.1",label:"원격 정지",level:"3차",scope:"공통",desc:"운행 중 원격에서 로봇 즉시 정지",src:"고시 항목16가"},
+          {id:"5.2.2",label:"원격 수동 조작",level:"3차",scope:"공통",desc:"자율주행 실패 시 영상장치로 주변 확인하며 원격 수동 이동",src:"고시 항목16나 / robotis.com",ie:"HF"},
+        ]},
+        {id:"5.3",label:"통신",level:"2차",children:[
+          {id:"5.3.1",label:"로봇-관제 실시간 통신",level:"3차",scope:"공통",desc:"로봇과 관제장치 간 통신 신호 유지 및 실시간 데이터 송수신",src:"고시 항목14나(3)"},
+          {id:"5.3.2",label:"통신 장애 대응",level:"3차",scope:"공통",desc:"통신장애 발생 시 사전 계획 시나리오에 따라 안전 작동",src:"고시 항목15"},
+        ]},
+        {id:"5.4",label:"사용자 인터페이스",level:"2차",children:[
+          {id:"5.4.1",label:"앱 기반 배송 요청·알림",level:"3차",scope:"공통",desc:"모바일 앱으로 로봇 배송 요청 및 도착 알림 수신",src:"robotis.com / robotis.us",ie:"HF"},
+          {id:"5.4.2",label:"다국어 음성·터치스크린",level:"3차",scope:"실내",desc:"한/영/중/일 음성 서비스 및 터치스크린 직관 조작",src:"en.robotis.com",ie:"HF"},
+        ]},
+      ]
+    },
+    {id:"6",label:"안전 확보",sublabel:"비상정지, 장애물 회피, 보행자 보호, 통신장애 대응 등 운행 안전성 보장",level:"기본기능 6",color:"#475569",
+      children:[
+        {id:"6.1",label:"비상정지",level:"2차",children:[
+          {id:"6.1.1",label:"물리적 비상정지",level:"3차",scope:"공통",desc:"빨간색 버섯머리 누름버튼, 제어시스템 최우선권, 수동 해제만 가능",src:"고시 항목5가",ie:"HF"},
+          {id:"6.1.2",label:"경사로 비상정지 안전",level:"3차",scope:"공통",desc:"경사로 비상정지 시 미끄러짐·구름 방지 제동 유지",src:"고시 항목5가(2)"},
+        ]},
+        {id:"6.2",label:"외형 안전",level:"2차",children:[
+          {id:"6.2.1",label:"접촉 안전 설계",level:"3차",scope:"공통",desc:"날카로운 모서리 없음, 최소 반경 3mm 이상, 끼임 방지",src:"고시 항목3 / iF Design 2024",ie:"HF",spec:"곡면 마감 전면 적용"},
+        ]},
+        {id:"6.3",label:"알림 및 시인성 확보",level:"2차",children:[
+          {id:"6.3.1",label:"청각 알림",level:"3차",scope:"공통",desc:"안전 운행 알림음, 55~73dB(A) 범위",src:"고시 항목9",ie:"HF"},
+          {id:"6.3.2",label:"시각 알림",level:"3차",scope:"공통",desc:"등화장치로 주행 방향·정지·회전 상태 표시, 표면 60°C 미만",src:"고시 항목10",ie:"HF"},
+        ]},
+        {id:"6.4",label:"내환경 보호",level:"2차",children:[
+          {id:"6.4.1",label:"방수 보호",level:"3차",scope:"실외",desc:"전 방향 물 튀김 방수 설계",src:"고시 항목11 / aparobot.com",ie:"MFG",spec:"IPX4 이상"},
+        ]},
+        {id:"6.5",label:"물리적 보안",level:"2차",children:[
+          {id:"6.5.1",label:"통신포트·저장장치 접근 차단",level:"3차",scope:"공통",desc:"외부 접근 불가 위치 배치 또는 잠금장치 보호",src:"고시 항목12"},
+          {id:"6.5.2",label:"적재함 보안 잠금",level:"3차",scope:"공통",desc:"배송 물품 보관용 보안 수납함 잠금",src:"robotis.us"},
+        ]},
+      ]
+    },
+  ]
+};
+
+const IE_LABELS={OR:"OR",MFG:"Manufacturing",HF:"인간공학"};
+const IE_COLORS_MAP={OR:"#6366F1",MFG:"#F59E0B",HF:"#EC4899"};
+const SCOPE_COLORS_MAP={"공통":"#64748B","실내":"#0EA5E9","실외":"#10B981"};
+
+function countNodes(n){let c=1;if(n.children)n.children.forEach(ch=>c+=countNodes(ch));return c}
+function collectIE(n,s=new Set()){if(n.ie)s.add(n.ie);if(n.children)n.children.forEach(c=>collectIE(c,s));return s}
+
+function hasMatch(n,f){
+  if(f.ie!=="전체"&&n.ie===f.ie)return true;
+  if(n.children)return n.children.some(c=>hasMatch(c,f));
+  return false;
+}
+
+function filterTree(node,filter){
+  if(filter.scope==="전체"&&filter.ie==="전체")return node;
+  function prune(n){
+    if(!n.children){
+      const sOk=filter.scope==="전체"||!n.scope||n.scope===filter.scope||n.scope==="공통";
+      const iOk=filter.ie==="전체"||n.ie===filter.ie;
+      return(filter.ie!=="전체"?sOk&&iOk:sOk)?{...n}:null;
+    }
+    const fc=n.children.map(prune).filter(Boolean);
+    if(fc.length>0)return{...n,children:fc};
+    const sOk=filter.scope==="전체"||!n.scope||n.scope===filter.scope||n.scope==="공통";
+    const iOk=filter.ie==="전체"||hasMatch(n,filter);
+    return(sOk&&iOk)?{...n,children:undefined}:null;
+  }
+  return prune(node)||node;
+}
+
+function TreeNode({node,depth=0,parentColor,expanded,toggleExpand,selectedNode,setSelectedNode}){
+  const theme=useContext(ThemeCtx);
+  const T=THEMES[theme];
+  const color=node.color||parentColor||"#64748B";
+  const hasChildren=node.children&&node.children.length>0;
+  const isExpanded=expanded.has(node.id);
+  const isSelected=selectedNode===node.id;
+  const isLeaf=!hasChildren;
+  const depthIndent=depth*20;
+  const ieTags=[...collectIE(node)];
+
+  const levelConf=[
+    {fs:16,fw:800,py:14,bg:T.cardBg,bw:2},
+    {fs:14,fw:700,py:10,bg:T.cardBg2,bw:2},
+    {fs:13,fw:600,py:8,bg:T.cardBg3,bw:1},
+    {fs:12,fw:500,py:6,bg:"transparent",bw:1},
+  ];
+  const s=levelConf[Math.min(depth,3)];
+
+  const handleClick=useCallback(()=>{
+    if(hasChildren)toggleExpand(node.id);
+    else setSelectedNode(isSelected?null:node.id);
+  },[node.id,hasChildren,isSelected,toggleExpand,setSelectedNode]);
+
+  const borderColor=`${color}${depth===0?'':'88'}`;
+
+  return(
+    <div style={{marginLeft:depthIndent}}>
+      <div onClick={handleClick}
+        style={{
+          display:"flex",alignItems:"flex-start",gap:8,padding:`${s.py}px 12px`,
+          marginBottom:2,borderRadius:8,background:s.bg,
+          border:`${s.bw}px solid ${color}${depth<=1?'88':'33'}`,
+          cursor:"pointer",transition:"all .15s ease",
+          boxShadow:isSelected?`0 0 0 2px ${color}`:"none",
+        }}
+        onMouseEnter={e=>{e.currentTarget.style.background=T.surfaceHover}}
+        onMouseLeave={e=>{e.currentTarget.style.background=s.bg}}
+      >
+        <span style={{width:18,minWidth:18,fontSize:13,color,marginTop:2,fontFamily:"'JetBrains Mono',monospace",userSelect:"none"}}>
+          {hasChildren?(isExpanded?"▼":"▶"):"●"}
+        </span>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+            {depth>0&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color,fontWeight:700,minWidth:36}}>{node.id}</span>}
+            <span style={{fontSize:s.fs,fontWeight:s.fw,color:T.text,lineHeight:1.4}}>{node.label}</span>
+            <span style={{fontSize:10,color:T.textTer,fontWeight:400}}>{node.level}</span>
+            {node.scope&&<span style={{fontSize:9,padding:"1px 6px",borderRadius:4,background:`${SCOPE_COLORS_MAP[node.scope]}22`,color:SCOPE_COLORS_MAP[node.scope],fontWeight:600,border:`1px solid ${SCOPE_COLORS_MAP[node.scope]}44`}}>{node.scope}</span>}
+            {depth<=1&&ieTags.length>0&&ieTags.map(t=><span key={t} style={{fontSize:9,padding:"1px 6px",borderRadius:4,background:`${IE_COLORS_MAP[t]}22`,color:IE_COLORS_MAP[t],fontWeight:600,border:`1px solid ${IE_COLORS_MAP[t]}44`}}>{IE_LABELS[t]}</span>)}
+            {node.ie&&depth>1&&<span style={{fontSize:9,padding:"1px 6px",borderRadius:4,background:`${IE_COLORS_MAP[node.ie]}22`,color:IE_COLORS_MAP[node.ie],fontWeight:600,border:`1px solid ${IE_COLORS_MAP[node.ie]}44`}}>{IE_LABELS[node.ie]}</span>}
+          </div>
+          {depth<=1&&node.sublabel&&<div style={{fontSize:11,color:T.textSec,marginTop:3,lineHeight:1.5}}>{node.sublabel}</div>}
+          {hasChildren&&!isExpanded&&<div style={{fontSize:10,color:T.textTer,marginTop:2}}>하위 {countNodes(node)-1}개 노드</div>}
+        </div>
+      </div>
+      {isLeaf&&isSelected&&(
+        <div style={{marginLeft:26,marginBottom:6,padding:"10px 14px",borderRadius:8,background:T.detailBg(color),borderLeft:`3px solid ${color}66`}}>
+          {node.desc&&<div style={{fontSize:12,color:T.text,lineHeight:1.6,marginBottom:6}}>{node.desc}</div>}
+          {node.spec&&<div style={{fontSize:11,color:"#F59E0B",marginBottom:4}}>📐 {node.spec}</div>}
+          {node.src&&<div style={{fontSize:10,color:T.textTer}}>출처: {node.src}</div>}
+        </div>
+      )}
+      {hasChildren&&isExpanded&&(
+        <div style={{marginTop:2,marginBottom:depth===0?8:2}}>
+          {node.children.map(child=><TreeNode key={child.id} node={child} depth={depth+1} parentColor={color} expanded={expanded} toggleExpand={toggleExpand} selectedNode={selectedNode} setSelectedNode={setSelectedNode}/>)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Stats({data}){
+  const theme=useContext(ThemeCtx);
+  const T=THEMES[theme];
+  let counts={total:0,bf:0,s2:0,s3:0};
+  function walk(n){counts.total++;if(n.level?.startsWith("기본기능"))counts.bf++;else if(n.level==="2차")counts.s2++;else if(n.level==="3차")counts.s3++;if(n.children)n.children.forEach(walk)}
+  walk(data);
+  const items=[{l:"총 노드",v:counts.total,c:T.text},{l:"기본기능",v:counts.bf,c:"#60A5FA"},{l:"2차 세부",v:counts.s2,c:"#A78BFA"},{l:"3차 핵심",v:counts.s3,c:"#34D399"}];
+  return(<div style={{display:"flex",gap:16,flexWrap:"wrap",marginBottom:16}}>
+    {items.map(it=><div key={it.l} style={{display:"flex",alignItems:"baseline",gap:6}}>
+      <span style={{fontSize:22,fontWeight:800,color:it.c,fontFamily:"'JetBrains Mono',monospace"}}>{it.v}</span>
+      <span style={{fontSize:11,color:T.textSec}}>{it.l}</span>
+    </div>)}
+  </div>);
+}
+
+function App(){
+  const[theme,setTheme]=useState("dark");
+  const[expanded,setExpanded]=useState(new Set(["root"]));
+  const[selectedNode,setSelectedNode]=useState(null);
+  const[filter,setFilter]=useState({scope:"전체",ie:"전체"});
+
+  const T=THEMES[theme];
+
+  const toggleTheme=useCallback(()=>{
+    const next=theme==="dark"?"light":"dark";
+    setTheme(next);
+    document.body.className=next;
+  },[theme]);
+
+  const toggleExpand=useCallback(id=>{
+    setExpanded(prev=>{const next=new Set(prev);if(next.has(id))next.delete(id);else next.add(id);return next});
+  },[]);
+
+  const expandAll=useCallback(()=>{
+    const ids=new Set();function walk(n){ids.add(n.id);if(n.children)n.children.forEach(walk)}walk(TREE_DATA);setExpanded(ids);
+  },[]);
+  const collapseAll=useCallback(()=>{setExpanded(new Set(["root"]));setSelectedNode(null)},[]);
+  const expandLevel=useCallback(d=>{
+    const ids=new Set();function walk(n,dd){if(dd<=d)ids.add(n.id);if(n.children)n.children.forEach(c=>walk(c,dd+1))}walk(TREE_DATA,0);setExpanded(ids);
+  },[]);
+
+  const filteredData=useMemo(()=>filterTree(TREE_DATA,filter),[filter]);
+
+  const scopes=["전체","공통","실내","실외"];
+  const ies=["전체","OR","MFG","HF"];
+
+  const btnStyle=(active,ac)=>({
+    fontSize:11,padding:"4px 12px",borderRadius:6,cursor:"pointer",
+    border:active?`1px solid ${ac||"#60A5FA"}`:`1px solid ${theme==="dark"?"#334155":"#CBD5E1"}`,
+    background:active?`${ac||"#60A5FA"}22`:"transparent",
+    color:active?(ac||"#60A5FA"):T.textSec,fontWeight:active?600:400,
+  });
+
+  return(
+    <ThemeCtx.Provider value={theme}>
+      <div style={{minHeight:"100vh",background:T.bg,color:T.text,transition:"all .3s ease"}}>
+        <div style={{maxWidth:920,margin:"0 auto",padding:"24px 16px"}}>
+          {/* Header */}
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+            <div>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+                <div style={{width:4,height:28,background:"linear-gradient(180deg,#2563EB,#7C3AED)",borderRadius:2}}/>
+                <h1 style={{fontSize:20,fontWeight:800,margin:0,letterSpacing:"-0.02em"}}>GAEMI 플랫폼 기술트리</h1>
+              </div>
+              <div style={{fontSize:12,color:T.textTer,marginLeft:14,lineHeight:1.6}}>
+                ROBOTIS GAEMI 자율주행 배송 로봇 — 목적기능 → 기본기능 → 세부기능 → 핵심기술 (Top-Down 기능 분해)
+              </div>
+              <div style={{fontSize:10,color:T.textQuat,marginLeft:14,marginTop:4}}>
+                한양대학교 ERICA 기술경영 | Lecture 3 기술기획 기반 | 4단계 구조
+              </div>
+            </div>
+            <button onClick={toggleTheme} style={{
+              fontSize:12,padding:"6px 14px",borderRadius:8,cursor:"pointer",
+              border:`1px solid ${theme==="dark"?"#334155":"#CBD5E1"}`,
+              background:theme==="dark"?"#1E293B":"#FFFFFF",
+              color:T.textSec,fontWeight:600,whiteSpace:"nowrap",
+            }}>
+              {theme==="dark"?"☀️ Light":"🌙 Dark"}
+            </button>
+          </div>
+
+          <Stats data={TREE_DATA}/>
+
+          {/* Legend */}
+          <div style={{display:"flex",gap:16,flexWrap:"wrap",marginBottom:12}}>
+            <div style={{fontSize:10,color:T.textTer,fontWeight:700,marginRight:4}}>범위:</div>
+            {Object.entries(SCOPE_COLORS_MAP).map(([k,v])=><div key={k} style={{display:"flex",alignItems:"center",gap:4}}>
+              <span style={{width:8,height:8,borderRadius:2,background:v,display:"inline-block"}}/>
+              <span style={{fontSize:10,color:T.textSec}}>{k}</span>
+            </div>)}
+            <div style={{width:1,background:theme==="dark"?"#334155":"#E2E8F0",margin:"0 4px"}}/>
+            <div style={{fontSize:10,color:T.textTer,fontWeight:700,marginRight:4}}>산업공학:</div>
+            {Object.entries(IE_LABELS).map(([k,v])=><div key={k} style={{display:"flex",alignItems:"center",gap:4}}>
+              <span style={{width:8,height:8,borderRadius:2,background:IE_COLORS_MAP[k],display:"inline-block"}}/>
+              <span style={{fontSize:10,color:T.textSec}}>{v}</span>
+            </div>)}
+          </div>
+
+          {/* Controls */}
+          <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
+            {[["전체 펼치기",expandAll],["전체 접기",collapseAll],["기본기능까지",()=>expandLevel(1)],["2차까지",()=>expandLevel(2)],["3차까지",()=>expandLevel(3)]].map(([l,fn])=>
+              <button key={l} onClick={fn} style={btnStyle(false)}>{l}</button>
+            )}
+          </div>
+
+          {/* Filters */}
+          <div style={{display:"flex",gap:20,flexWrap:"wrap",marginBottom:16}}>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <span style={{fontSize:11,color:T.textTer,fontWeight:600}}>범위:</span>
+              {scopes.map(s=><button key={s} onClick={()=>setFilter(f=>({...f,scope:s}))} style={btnStyle(filter.scope===s)}>{s}</button>)}
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <span style={{fontSize:11,color:T.textTer,fontWeight:600}}>산업공학:</span>
+              {ies.map(t=><button key={t} onClick={()=>setFilter(f=>({...f,ie:t}))} style={btnStyle(filter.ie===t,IE_COLORS_MAP[t])}>{t==="전체"?"전체":IE_LABELS[t]}</button>)}
+            </div>
+          </div>
+
+          {/* Tree */}
+          <div style={{background:theme==="dark"?"#1E293B22":"#FFFFFF",borderRadius:12,padding:"12px 8px",border:`1px solid ${theme==="dark"?"#1E293B":"#E2E8F0"}`}}>
+            <TreeNode node={filteredData} depth={0} expanded={expanded} toggleExpand={toggleExpand} selectedNode={selectedNode} setSelectedNode={setSelectedNode}/>
+          </div>
+
+          {/* Footer */}
+          <div style={{marginTop:16,padding:"12px 14px",background:theme==="dark"?"#1E293B44":"#F1F5F9",borderRadius:8,border:`1px solid ${theme==="dark"?"#1E293B":"#E2E8F0"}`}}>
+            <div style={{fontSize:11,color:T.textTer,lineHeight:1.6}}>
+              <strong style={{color:T.textSec}}>조작 안내</strong> — ▶ 클릭: 하위 노드 펼치기/접기 | ● 클릭: 3차 핵심기술 상세 정보 보기 | 상단 버튼: 펼침 수준 제어 및 필터링
+            </div>
+            <div style={{fontSize:10,color:T.textQuat,marginTop:6}}>
+              출처: ROBOTIS 공식(robotis.com, robotis.us, en.robotis.com), 산업통상자원부 고시 제2023-211호 별표3, HITEC 2024 기자취재, aparobot.com, iF Design Award 2024
+            </div>
+          </div>
+        </div>
+      </div>
+    </ThemeCtx.Provider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
